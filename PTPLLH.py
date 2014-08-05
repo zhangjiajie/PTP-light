@@ -227,21 +227,6 @@ class species_setting:
 			return taxa_order, partion
 
 
-	def partition2names(self, taxa_order, partition):
-		nameparts = []
-		a = min(partition)
-		b = max(partition) + 1
-		for i in range(a, b):
-			onepar = []
-			for j in range(len(partition)):
-				idfier = partition[j]
-				if idfier == i:
-					onepar.append(taxa_order[j])
-			nameparts.append(onepar)
-		
-		return nameparts
-
-
 	def whiten_species(self):
 		if len(self.spe_list) != 0:
 			avg_num = 0.0

@@ -81,8 +81,8 @@ class bootstrap_ptp:
 				me.search(reroot = self.reroot, strategy = args.sstrategy)
 			
 			#print to screen
-			me.count_species(pv = args.pvalue)
-			me.print_species()
+			#me.count_species(pv = args.pvalue)
+			#me.print_species()
 			print("Number of species: " + repr(me.count_species(pv = args.pvalue)))
 			
 			to, par = me.output_species(taxa_order = self.taxa_order)
@@ -103,6 +103,15 @@ class bootstrap_ptp:
 		return self.partitions, self.settings
 	
 	
+	def delimit_EPA(self, sstrategy, reroot, max_iters, min_brl, sp_rate, pvalue = 0.001):
+		tree = self.trees[0]
+		me = exponential_mixture(tree= tree, max_iters = max_iters, min_br = min_brl, sp_rate = sp_rate, fix_sp_rate = True)
+		me.search(reroot = reroot, strategy = sstrategy)
+		num_spe = me.count_species(print_log = False, pv = pvalue)
+		taxa_order, partition = me.output_species(taxa_order = self.taxa_order)
+		return partition2names(taxa_order, partition)
+	
+	
 	def raxmlTreeParser(self, fin):
 		f = open(fin)
 		lines = f.readlines()
@@ -113,6 +122,21 @@ class bootstrap_ptp:
 			if not line == "":
 				trees.append(line[line.index("("):])
 		return trees
+
+
+def partition2names(taxa_order, partition):
+	nameparts = []
+	a = min(partition)
+	b = max(partition) + 1
+	for i in range(a, b):
+		onepar = []
+		for j in range(len(partition)):
+			idfier = partition[j]
+			if idfier == i:
+				onepar.append(taxa_order[j])
+		nameparts.append(onepar)
+	
+	return nameparts
 
 
 """
@@ -251,11 +275,13 @@ def print_run_info(args):
 
 
 
-if __name__ == "__main__":
-	if len(sys.argv) == 1: 
-		sys.argv.append("-h")
-	args = parse_arguments()
-	
+def EPA_interface(tree, sp_rate, reroot = True, method = "H0", max_iters = 20000, min_brl = 0.0001, pvalue = 0.001 ):
+	bsptp = bootstrap_ptp(filename = tree, ftype = "raxml", reroot = reroot, method = method)
+	return bsptp.delimit_EPA(sstrategy = method, reroot = reroot, max_iters = max_iters, min_brl = min_brl, sp_rate = sp_rate, pvalue = pvalue)
+
+
+
+def delimit_species(args):
 	if not os.path.exists(args.stree):
 		print("Input tree file does not exists: %s" % args.strees)
 		sys.exit()
@@ -291,5 +317,15 @@ if __name__ == "__main__":
 		
 	except treeIO.newick.NewickError:
 		print("Unexisting tree file or Malformed newick tree structure.")
+
+
+
+if __name__ == "__main__":
+	if len(sys.argv) == 1: 
+		sys.argv.append("-h")
+	args = parse_arguments()
+	delimit_species(args)
+	#p = EPA_interface(tree = args.stree, reroot = True, sp_rate = 3.745, method = "H0", max_iters = 20000, min_brl = 0.0001, pvalue = 0.001 )
+	#print(p)
 
 
