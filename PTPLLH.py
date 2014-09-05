@@ -36,10 +36,13 @@ class exp_distribution:
 		return "Exponential distribution with rate = " + repr(self.rate)
 	
 	def estimate_rate(self):
-		sumbr = 0.0
 		numbr = len(self.data)
-		for br in self.data:
-			sumbr = sumbr + br
+		
+		#optimize
+		sumbr = sum(self.data)
+		#sumbr = 0
+		#for br in self.data:
+		#	sumbr = sumbr + br
 		if sumbr == 0:
 			self.rate = 0
 		else:
@@ -111,12 +114,16 @@ class species_setting:
 		self.root = root
 		self.all_nodes = root.get_descendants()
 		self.all_nodes.append(self.root)
-		self.coa_nodes = []
+		
 		self.logl = 0
 		self.spe_list = []
-		for node in self.all_nodes:
-			if not (node in self.spe_nodes):
-				self.coa_nodes.append(node) 
+		
+		#optimize
+		self.coa_nodes = [node for node in self.all_nodes if not (node in self.spe_nodes)]
+		#self.coa_nodes = []
+		#for node in self.all_nodes:
+		#	if not (node in self.spe_nodes):
+		#		self.coa_nodes.append(node) 
 		
 		self.active_nodes = []
 		for node in self.spe_nodes:
@@ -137,9 +144,11 @@ class species_setting:
 	
 	def get_nodes_can_split(self):
 		if self.node_can_split == []:
-			for node in self.active_nodes:
-				if not node.is_leaf():
-					self.node_can_split.append(node)
+			#optimize
+			self.node_can_split = [node for node in self.active_nodes if not node.is_leaf()]
+			#for node in self.active_nodes:
+			#	if not node.is_leaf():
+			#		self.node_can_split.append(node)
 			return len(self.node_can_split)
 		else:
 			return len(self.node_can_split)
@@ -161,15 +170,17 @@ class species_setting:
 		if self.logl != 0:
 			return self.logl
 		else:
-			spe_br = []
-			coa_br = []
-			for node in self.spe_nodes:
-				if node.dist > self.min_brl:
-					spe_br.append(node.dist)
-			
-			for node in self.coa_nodes:
-				if node.dist > self.min_brl:
-					coa_br.append(node.dist)
+			#optimize
+			spe_br = [node.dist for node in self.spe_nodes if node.dist > self.min_brl]
+			coa_br = [node.dist for node in self.coa_nodes if node.dist > self.min_brl]
+			#spe_br = []
+			#coa_br = []
+			#for node in self.spe_nodes:
+			#	if node.dist > self.min_brl:
+			#		spe_br.append(node.dist)
+			#for node in self.coa_nodes:
+			#	if node.dist > self.min_brl:
+			#		coa_br.append(node.dist)
 					
 			self.e1 = exp_distribution(coa_br)
 			self.e2 = None
